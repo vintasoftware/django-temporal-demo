@@ -1,0 +1,96 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - TEMPORAL_HOST=temporal
+      - TEMPORAL_PORT=7233
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/health_analytics
+    depends_on:
+      - db
+      - temporal
+      - mailpit
+    volumes:
+      - .:/app
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - TEMPORAL_HOST=temporal
+      - TEMPORAL_PORT=7233
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/health_analytics
+    depends_on:
+      - temporal
+      - db
+    volumes:
+      - .:/app
+
+  temporal:
+    image: temporalio/auto-setup:1.22.3
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-postgresql
+      - DJANGO_SETTINGS_MODULE=healthcheck_analytic.settings
+    depends_on:
+      - temporal-postgresql
+    volumes:
+      - ./temporal-config/dynamicconfig:/etc/temporal/config/dynamicconfig/
+
+  temporal-postgresql:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=temporal
+    volumes:
+      - temporal-postgresql:/var/lib/postgresql/data
+
+  temporal-web:
+    image: temporalio/web:1.15.0
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    ports:
+      - "8088:8088"
+    depends_on:
+      - temporal
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=health_analytics
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    volumes:
+      - ./.mailpit-data:/data
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - default
+
+volumes:
+  temporal-postgresql:
+  postgres_data:

@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div>
+    <h2>Trigger Monthly Health Activities Processing</h2>
+    <p>Click the button below to manually trigger the monthly health activities processing workflow.</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Trigger Processing" />
+    </form>
+</div>
+{% endblock %}

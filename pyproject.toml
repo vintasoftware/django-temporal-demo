@@ -1,0 +1,31 @@
+[project]
+name = "health-analytics"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Hugo bessa",email = "hugo@vinta.com.br"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "Django (>=5.1.5,<6.0.0)",
+    "temporalio (>=1.9.0,<2.0.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "uvicorn[standard] (>=0.34.0,<0.35.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.12, <4"
+
+[tool.poetry.group.dev.dependencies]
+django-stubs = {extras = ["compatible-mypy"], version = "^5.1.2"}
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "healthcheck_analytic.settings"

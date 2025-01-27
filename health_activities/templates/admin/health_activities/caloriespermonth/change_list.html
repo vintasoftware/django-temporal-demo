@@ -1,0 +1,23 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'admin:health_activities_trigger_processing' %}" class="trigger-processing-button">
+            {% translate "Trigger Monthly Processing" %}
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .trigger-processing-button {
+        background: var(--button-bg);
+        padding: 10px 15px;
+        border-radius: 4px;
+        color: var(--button-fg);
+    }
+</style>
+{% endblock %}
